@@ -10,6 +10,7 @@ from BaseHTTPServer import BaseHTTPRequestHandler
 from PyQt4.QtCore import Qt
 from PyQt4.QtCore import SIGNAL
 from PyQt4.QtCore import QObject
+from PyQt4.QtCore import QString
 from PyQt4.QtCore import QThread
 from PyQt4.QtGui import qApp
 from PyQt4.QtGui import QMenu
@@ -77,7 +78,7 @@ def start(host, port, command):
             mainFrame = self._view.page().mainFrame()
             v = mainFrame.scrollBarValue(Qt.Vertical)
             h = mainFrame.scrollBarValue(Qt.Horizontal)
-            self._view.setHtml(html)
+            self._view.setHtml(QString.fromUtf8(html))
             mainFrame = self._view.page().mainFrame()
             mainFrame.setScrollBarValue(Qt.Vertical, v)
             mainFrame.setScrollBarValue(Qt.Horizontal, h)
