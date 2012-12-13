@@ -11,6 +11,11 @@ from PyQt4.QtCore import Qt
 from PyQt4.QtCore import SIGNAL
 from PyQt4.QtCore import QObject
 from PyQt4.QtCore import QThread
+from PyQt4.QtGui import qApp
+from PyQt4.QtGui import QMenu
+from PyQt4.QtGui import QDialog
+from PyQt4.QtGui import QPrinter
+from PyQt4.QtGui import QPrintDialog
 from PyQt4.QtGui import QApplication
 from PyQt4.QtWebKit import QWebView
 from PyQt4.QtNetwork import QNetworkProxyFactory
@@ -48,7 +53,25 @@ def start(host, port, command):
             QNetworkProxyFactory.setUseSystemConfiguration(True)
             self._app = QApplication(sys.argv)
             self._view = QWebView()
+            self._view.setContextMenuPolicy(Qt.CustomContextMenu)
             QObject.connect(self._view, SIGNAL("update(QString)"), self._update)
+
+            def openMenu(position):
+                menu = QMenu()
+                printAction = menu.addAction("Print")
+                quitAction = menu.addAction("Quit")
+                action = menu.exec_(self._view.mapToGlobal(position))
+
+                if action == quitAction:
+                    qApp.quit()
+                elif action == printAction:
+                    printer = QPrinter()
+                    dialog = QPrintDialog(printer, self._view)
+                    if dialog.exec_() != QDialog.Accepted:
+                        return
+                    self._view.print_(printer)
+            self._view.customContextMenuRequested.connect(openMenu)
+
 
         def _update(self, html):
             mainFrame = self._view.page().mainFrame()
