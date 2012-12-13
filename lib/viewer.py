@@ -68,19 +68,29 @@ def start(host, port, command):
 
     class Server(QThread):
         class HTTPPreviewRequestHandler(BaseHTTPRequestHandler):
-            def do_POST(self):
-                if self.path == '/favicon.ico':
-                    return
-                # get pandoc filename from query string
-                #qs = urlparse.urlparse(self.path).query
-                qs = self.rfile.read(int(self.headers.getheader('Content-Length')))
+            def update_preview(self, qs):
                 qs = urlparse.parse_qs(qs, 1)
                 filename = qs.get('filename', ['README.markdown'])[0]
                 # compile via pandoc
                 data = compiler.compile(filename)
                 # update preview
                 viewer._view.emit(SIGNAL('update(QString)'), data)
-                # respond
+                return data
+
+            def do_GET(self):
+                if self.path == '/favicon.ico':
+                    return
+                # get pandoc filename from query string
+                qs = urlparse.urlparse(self.path).query
+                data = self.update_preview(qs)
+                # respond data
+                self.wfile.write(data)
+
+            def do_POST(self):
+                # get pandoc filename from query string
+                qs = self.rfile.read(int(self.headers.getheader('Content-Length')))
+                data = self.update_preview(qs)
+                # respond OK
                 self.wfile.write('OK')
 
         def __init__(self, host, port):

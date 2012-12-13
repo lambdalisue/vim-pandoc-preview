@@ -1,13 +1,13 @@
 " Ref: https://github.com/mattn/mkdpreview-vim/blob/master/plugin/mkdpreview.vim
 let s:pyscript = expand('<sfile>:p:h:h') . '/lib/viewer.py'
 
-if !exists("g:pandoc_command") || !g:pandoc_command
+if !exists("g:pandoc_command")
   let g:pandoc_command = "pandoc -Ss --toc -t html"
 endif
-if !exists("g:pandoc_preview_host") || !g:pandoc_preview_host
+if !exists("g:pandoc_preview_host")
   let g:pandoc_preview_host = "localhost"
 endif
-if !exists("g:pandoc_preview_port") || !g:pandoc_preview_port
+if !exists("g:pandoc_preview_port")
   let g:pandoc_preview_port = "8081"
 endif
 
@@ -15,11 +15,14 @@ function! s:update_preview()
   let l:url = printf("http://%s:%s/", 
     \ g:pandoc_preview_host,
     \ g:pandoc_preview_port)
+  if exists("g:pandoc_preview_debug") && g:pandoc_preview_debug == 1
+    echo "Preview Request URL: " . l:url
+  endif
   let ret = webapi#http#post(l:url, {
     \ "filename" : expand("%:p")
     \})
-  if exists("g:pandoc_preview_debug") && g:pandoc_preview_debug
-    echo ret.content
+  if exists("g:pandoc_preview_debug") && g:pandoc_preview_debug == 1
+    echo "Response: " . ret.content
   endif
 endfunction
 
@@ -30,6 +33,9 @@ function! s:preview(bang)
       \ shellescape(g:pandoc_command),
       \ shellescape(g:pandoc_preview_host),
       \ shellescape(g:pandoc_preview_port))
+    if exists("g:pandoc_preview_debug") && g:pandoc_preview_debug == 1
+      echo "Command:" . l:command
+    endif
     if has('win32') || has('win64')
       if exists('g:pandoc_preview_python_path')
         silent exe printf("!start %s %s",
