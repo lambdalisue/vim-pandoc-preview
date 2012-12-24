@@ -43,7 +43,10 @@ def start(host, port, command):
             self.command = command
 
         def compile(self, filename):
-            cmd = self.command + ' ' + filename
+            if ' % ' in self.command:
+                cmd = self.command.replace(' % ', ' %s ' % filename)
+            else:
+                cmd = self.command + ' ' + filename
             status, output = commands.getstatusoutput(cmd)
             return output
     compiler = Compiler(command)
@@ -73,7 +76,6 @@ def start(host, port, command):
                     self._view.print_(printer)
             self._view.customContextMenuRequested.connect(openMenu)
 
-
         def _update(self, html):
             mainFrame = self._view.page().mainFrame()
             v = mainFrame.scrollBarValue(Qt.Vertical)
@@ -102,20 +104,28 @@ def start(host, port, command):
                 return data
 
             def do_GET(self):
-                if self.path == '/favicon.ico':
-                    return
-                # get pandoc filename from query string
-                qs = urlparse.urlparse(self.path).query
-                data = self.update_preview(qs)
-                # respond data
-                self.wfile.write(data)
+                try:
+                    if self.path == '/favicon.ico':
+                        return
+                    # get pandoc filename from query string
+                    qs = urlparse.urlparse(self.path).query
+                    data = self.update_preview(qs)
+                    # respond data
+                    self.wfile.write(data)
+                except Exception, e:
+                    print "Error:", e
+                    self.wfile.write("Unexpected error: %s" % e)
 
             def do_POST(self):
-                # get pandoc filename from query string
-                qs = self.rfile.read(int(self.headers.getheader('Content-Length')))
-                data = self.update_preview(qs)
-                # respond OK
-                self.wfile.write('OK')
+                try:
+                    # get pandoc filename from query string
+                    qs = self.rfile.read(int(self.headers.getheader('Content-Length')))
+                    self.update_preview(qs)
+                    # respond OK
+                    self.wfile.write('OK')
+                except Exception, e:
+                    print "Error:", e
+                    self.wfile.write("Unexpected error: %s" % e)
 
         def __init__(self, host, port):
             super(Server, self).__init__()

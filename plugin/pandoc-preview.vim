@@ -11,7 +11,7 @@ if !exists("g:pandoc_preview_port")
   let g:pandoc_preview_port = "8081"
 endif
 
-function! s:update_preview()
+function! s:UpdatePreview()
   let l:url = printf("http://%s:%s/", 
     \ g:pandoc_preview_host,
     \ g:pandoc_preview_port)
@@ -26,7 +26,7 @@ function! s:update_preview()
   endif
 endfunction
 
-function! s:preview(bang)
+function! s:Preview(bang)
   if a:bang == '!'
     let l:command = printf("%s -c %s -o %s -p %s",
       \ shellescape(s:pyscript),
@@ -61,10 +61,14 @@ function! s:preview(bang)
     "endif
     augroup Preview
       autocmd!
-      autocmd BufWritePost <buffer> call <SID>update_preview()
+      autocmd BufWritePost <buffer> call <SID>UpdatePreview()
     augroup END
   endif
-  call s:update_preview()
+  call s:UpdatePreview()
+endfunction
+function! s:Compile()
+  call system(printf("%s & 2>&1 /dev/null", shellescape(g:pandoc_command)))
 endfunction
 
-command! -bang PandocPreview call <SID>preview('<bang>')
+command! PandocCompile call <SID>Compile()
+command! -bang PandocPreview call <SID>Preview('<bang>')
