@@ -1,3 +1,5 @@
+**See [shareboard.vim](https://github.com/lambdalisue/shareboard.vim) which I newly made. It is more flexible and useful :-)**
+
 % vim-pandoc-preview README
 % lambdalisue <lambdalisue@hashnote.net>
 % 2012.12.13
